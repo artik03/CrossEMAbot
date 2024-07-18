@@ -13,7 +13,7 @@ exports.TokenService = void 0;
 const db_1 = require("./db");
 class TokenService {
     constructor() {
-        TokenService.tokenCollection = db_1.client
+        this.tokenCollection = db_1.client
             .db("sol_bot_data")
             .collection("tokens");
     }
@@ -32,7 +32,7 @@ class TokenService {
                     buyAmount: null,
                     buyPrice: null,
                 };
-                const result = yield TokenService.tokenCollection.insertOne(tokenData);
+                const result = yield this.tokenCollection.insertOne(tokenData);
                 console.log(`${name} inserted successfully into MongoDB`);
                 return true;
             }
@@ -42,7 +42,7 @@ class TokenService {
             }
         });
     }
-    static getAllTokens() {
+    getAllTokens() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const tokens = yield this.tokenCollection.find({}).toArray();
@@ -57,7 +57,7 @@ class TokenService {
     updateToken(token) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield TokenService.tokenCollection.updateOne({ address: token.address }, { $set: token });
+                yield this.tokenCollection.updateOne({ address: token.address }, { $set: token });
                 console.log(`Token ${token.name} (${token.address}) updated successfully.`);
             }
             catch (err) {
@@ -68,7 +68,7 @@ class TokenService {
     deleteToken(address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield TokenService.tokenCollection.deleteOne({ address });
+                const result = yield this.tokenCollection.deleteOne({ address });
                 console.log(`Token with address ${address} deleted successfully`);
                 return true;
             }
@@ -81,7 +81,7 @@ class TokenService {
     resetToken(address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const updateResult = yield TokenService.tokenCollection.updateOne({ address: address }, {
+                const updateResult = yield this.tokenCollection.updateOne({ address: address }, {
                     $set: {
                         closing_prices: [],
                         trend: null,
@@ -107,7 +107,7 @@ class TokenService {
     resetTokens() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const updateResult = yield TokenService.tokenCollection.updateMany({}, {
+                const updateResult = yield this.tokenCollection.updateMany({}, {
                     $set: {
                         closing_prices: [],
                         trend: null,

@@ -18,7 +18,8 @@ Choose an option:
 1. Add token
 2. Reset token
 3. Reset all tokens
-4. Reset account state
+4. Add account state
+5. Reset account state
 q. Quit
 `;
 
@@ -73,12 +74,24 @@ const main = async () => {
           const balance: number = parseFloat(
             (await askQuestion("Enter initial amount: ")) as string
           );
+          await accountStateService.addAccountState(balance);
+          console.log("Account state reset successfully.");
+        } catch (error) {
+          console.error("Error resetting account state:", error);
+        }
+        break;
+      case "5":
+        try {
+          const balance: number = parseFloat(
+            (await askQuestion("Enter initial amount: ")) as string
+          );
           await accountStateService.resetAccountState(balance);
           console.log("Account state reset successfully.");
         } catch (error) {
           console.error("Error resetting account state:", error);
         }
         break;
+
       case "q":
         shouldContinue = false;
         break;

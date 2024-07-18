@@ -1,8 +1,4 @@
 "use strict";
-// import { connectMongoDB, disconnectMongoDB } from "./db/db";
-// import { TokenService, Token } from "./db/tokenOperations";
-// import TokenFetcher from "./dex/tokenFetchers";
-// import Functions from "./utils/functions";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -16,62 +12,68 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// const processToken = async (token: Token, tokenFromAPI) => {
-//   if (token.state !== 1) return;
-//   const data = tokensData[token.hash];
-//   const newPrice = data.price;
-//   token.closing_prices.push(newPrice);
-//   if (token.closing_prices.length < 26) {
-//     await updateToken(token);
-//     return;
-//   }
-//   const [EMA8, EMA26] = calculateEMAs(token.closing_prices);
-//   if (!EMA8 || !EMA26) {
-//     updateToken(token);
-//     return;
-//   }
-//   let newTrend = EMA8 >= EMA26 ? 1 : 0;
-//   if (token.trend === 0 && newTrend === 1) {
-//     console.log(`Buy signal for ${token.name} (${token.hash})`);
-//     const buyAmount = 1 / newPrice; // amount for 1 $
-//     buy(buyAmount, token.hash, updateAccountState);
-//     token.amount_bought += buyAmount;
-//     token.buy_price = newPrice;
-//   }
-//   if (
-//     (token.trend === 1 && newTrend === 0) ||
-//     (token.buy_price && newPrice >= token.buy_price * 1.2)
-//   ) {
-//     console.log(`Sell signal for ${token.name} (${token.hash})`);
-//     const sellPrice = token.amount_bought * newPrice;
-//     sell(sellPrice, token.hash, updateAccountState);
-//     token.amount_bought = 0;
-//     token.buy_price = null;
-//   }
-//   token.trend = newTrend;
-//   await updateToken(token);
-// };
-// const run = async () => {
-//   try {
-//     await connectMongoDB();
-//     while (true) {
-//       const tokens: Token[] = await TokenService.getAllTokens(); // get from db
-//       const addresses: string[] = tokens.map((token) => token.address);
-//       const response = await TokenFetcher.fetchMultipleTokenData(addresses); // fetch from jupiter api
-//       // check all tokens if their emas crossed
-//       const processPromises = tokens.map((token) =>
-//         processToken(token, response.data)
-//       );
-//       await Promise.all(processPromises);
-//       await Functions.sleep(30000);
-//     }
-//   } finally {
-//     await disconnectMongoDB();
-//   }
-// };
-// run().catch(console.error);
-const tokenFetchers_1 = __importDefault(require("./dex/tokenFetchers"));
-const run = () => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(yield tokenFetchers_1.default.fetchToken("AguFbHujcAEDSdNBhz2KjVjsBq2NPw8S8SUh5iz67KSc"));
+const accountStateOperations_1 = require("./db/accountStateOperations");
+const db_1 = require("./db/db");
+const tokenOperations_1 = require("./db/tokenOperations");
+const tokenFetchers_1 = require("./dex/tokenFetchers");
+const tradeService_1 = __importDefault(require("./dex/tradeService"));
+const functions_1 = __importDefault(require("./utils/functions"));
+const accountStateService = new accountStateOperations_1.AccountStateService();
+const tradeService = new tradeService_1.default(accountStateService.updateAccountState);
+const tokenService = new tokenOperations_1.TokenService();
+const tokenFetcher = new tokenFetchers_1.TokenFetcher();
+const processToken = (token, tokenFromAPI) => __awaiter(void 0, void 0, void 0, function* () {
+    if (token.state !== 1)
+        return;
+    const data = tokenFromAPI[token.address];
+    const newPrice = data.price;
+    token.closingPrices.push(newPrice);
+    const [EMA8, EMA26] = functions_1.default.calculateEMAs(token.closingPrices);
+    if (!EMA8 || !EMA26) {
+        tokenService.updateToken(token);
+        return;
+    }
+    const newTrend = EMA8 >= EMA26 ? 1 : 0;
+    // check for reversal
+    if (token.trend === 0 && newTrend === 1) {
+        console.log(`Buy signal for ${token.name} (${token.address})`);
+        const newBuyAmount = yield tradeService.buy(newPrice, token.address);
+        if (newBuyAmount) {
+            token.buyAmount = token.buyAmount
+                ? token.buyAmount + newBuyAmount
+                : newBuyAmount;
+            token.buyPrice = newPrice;
+        }
+    }
+    if ((token.trend === 1 && newTrend === 0) ||
+        (token.buyPrice && newPrice >= token.buyPrice * 1.1)) {
+        console.log(`Sell signal for ${token.name} (${token.address})`);
+        yield tradeService.sell(token.buyAmount ? token.buyAmount : 0, newPrice, token.address);
+        token.buyAmount = null;
+        token.buyPrice = null;
+    }
+    if (token.closingPrices.length >= 26)
+        token.closingPrices.shift();
+    token.trend = newTrend;
+    yield tokenService.updateToken(token);
 });
-run();
+const run = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, db_1.connectMongoDB)();
+        while (true) {
+            const tokens = yield tokenService.getAllTokens(); // get from db
+            const addresses = tokens.map((token) => token.address);
+            const response = yield tokenFetcher.fetchMultipleTokenData(addresses); // fetch from jupiter api
+            if (!response)
+                throw new Error("No response from API");
+            // check all tokens if their emas crossed
+            const processPromises = tokens.map((token) => processToken(token, response.data));
+            yield Promise.all(processPromises);
+            yield functions_1.default.sleep(30000);
+        }
+    }
+    finally {
+        yield (0, db_1.disconnectMongoDB)();
+    }
+});
+run().catch(console.error);

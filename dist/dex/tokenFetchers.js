@@ -12,12 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TokenFetcher = void 0;
 const axios_1 = __importDefault(require("axios"));
 class TokenFetcher {
-    static fetchToken(address) {
+    constructor() {
+        this.baseUrl = "https://price.jup.ag/v6/price?ids=";
+    }
+    fetchToken(address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const response = yield axios_1.default.get(`${TokenFetcher.baseUrl}${address}`);
+                const response = yield axios_1.default.get(`${this.baseUrl}${address}`);
                 if (response.status === 200) {
                     return response.data;
                 }
@@ -30,11 +34,11 @@ class TokenFetcher {
             }
         });
     }
-    static fetchMultipleTokenData(tokenAddresses) {
+    fetchMultipleTokenData(tokenAddresses) {
         return __awaiter(this, void 0, void 0, function* () {
             const tokenIds = tokenAddresses.join(",");
             try {
-                const response = yield axios_1.default.get(`${TokenFetcher.baseUrl}${tokenIds}`);
+                const response = yield axios_1.default.get(`${this.baseUrl}${tokenIds}`);
                 return response.data;
             }
             catch (error) {
@@ -44,5 +48,4 @@ class TokenFetcher {
         });
     }
 }
-TokenFetcher.baseUrl = "https://price.jup.ag/v6/price?ids=";
-exports.default = TokenFetcher;
+exports.TokenFetcher = TokenFetcher;

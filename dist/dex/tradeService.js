@@ -13,26 +13,32 @@ class TradeService {
     constructor(updateAccountState) {
         this.updateAccountState = updateAccountState;
     }
-    buy(amount, address) {
+    buy(price, address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.updateAccountState(-amount);
+                const buyValue = 1;
+                const amount = buyValue / price;
+                const result = yield this.updateAccountState(buyValue);
                 if (result) {
                     console.log(`Bought ${amount} of ${address}`);
+                    return amount;
                 }
                 else {
                     console.error(`Failed to buy ${amount} of ${address}`);
+                    return null;
                 }
             }
             catch (error) {
                 console.error(`Error buying token: ${error.message}`);
+                return null;
             }
         });
     }
-    sell(price, address) {
+    sell(amount, price, address) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.updateAccountState(price);
+                const totalPrice = amount * price;
+                const result = yield this.updateAccountState(-totalPrice);
                 if (result) {
                     console.log(`Sold ${address} for ${price}`);
                 }
