@@ -6,6 +6,13 @@ dotenv.config();
 const username = process.env.MONGO_DB_USERNAME as string;
 const password = process.env.MONGO_DB_PASSWORD as string;
 
+if (!username || !password) {
+  console.error(
+    "Missing MONGO_DB_USERNAME or MONGO_DB_PASSWORD environment variables."
+  );
+  process.exit(1);
+}
+
 const uri = `mongodb+srv://${username}:${password}@cluster0.5ipsrzy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 export const client = new MongoClient(uri, {

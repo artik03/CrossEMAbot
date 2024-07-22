@@ -18,13 +18,12 @@ export interface FetchedTokenResponse {
 }
 
 export class TokenFetcher {
-  private baseUrl = "https://price.jup.ag/v6/price?ids=";
-
   public async fetchToken(
     address: string
   ): Promise<FetchedTokenResponse | null> {
     try {
-      const response = await axios.get(`${this.baseUrl}${address}`);
+      const baseUrl = "https://price.jup.ag/v6/price?ids=";
+      const response = await axios.get(`${baseUrl}${address}`);
 
       if (response.status === 200) {
         return response.data as FetchedTokenResponse;
@@ -44,7 +43,9 @@ export class TokenFetcher {
     const tokenIds = tokenAddresses.join(",");
 
     try {
-      const response = await axios.get(`${this.baseUrl}${tokenIds}`);
+      const baseUrl = "https://price.jup.ag/v6/price?ids=";
+      const response = await axios.get(`${baseUrl}${tokenIds}`);
+      console.log(response.data);
       return response.data as FetchedTokenResponse;
     } catch (error: any) {
       console.error(`Error fetching token data: ${error}`);

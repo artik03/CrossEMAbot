@@ -29,7 +29,8 @@ Choose an option:
 1. Add token
 2. Reset token
 3. Reset all tokens
-4. Reset account state
+4. Add account state
+5. Reset account state
 q. Quit
 `;
 const askQuestion = (query) => new Promise((resolve) => rl.question(query, resolve));
@@ -70,6 +71,16 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
                 }
                 break;
             case "4":
+                try {
+                    const balance = parseFloat((yield askQuestion("Enter initial amount: ")));
+                    yield accountStateService.addAccountState(balance);
+                    console.log("Account state reset successfully.");
+                }
+                catch (error) {
+                    console.error("Error resetting account state:", error);
+                }
+                break;
+            case "5":
                 try {
                     const balance = parseFloat((yield askQuestion("Enter initial amount: ")));
                     yield accountStateService.resetAccountState(balance);

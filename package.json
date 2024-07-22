@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "dev": "nodemon main.js"
+    "dev": "ts-node src/main.ts",
+    "manager": "ts-node src/manager.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "@types/mongodb": "^4.0.7",
     "@types/node": "^20.14.11",
     "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }
 }

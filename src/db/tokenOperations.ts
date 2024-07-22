@@ -94,10 +94,10 @@ class TokenService {
         { address: address },
         {
           $set: {
-            closing_prices: [],
+            closingPrices: [],
             trend: null,
-            buy_price: null,
-            amount_bought: null,
+            buyPrice: null,
+            buyAmount: null,
           },
         }
       );
@@ -123,10 +123,10 @@ class TokenService {
         {},
         {
           $set: {
-            closing_prices: [],
+            closingPrices: [],
             trend: null,
-            buy_price: null,
-            amount_bought: null,
+            buyPrice: null,
+            buyAmount: null,
           },
         }
       );

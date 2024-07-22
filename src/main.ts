@@ -27,7 +27,7 @@ const processToken = async (token: Token, tokenFromAPI: FetchedTokenData) => {
     tokenService.updateToken(token);
     return;
   }
-  const newTrend = EMA8 >= EMA26 ? 1 : 0;
+  const newTrend = EMA8 > EMA26 ? 1 : 0;
 
   // check for reversal
   if (token.trend === 0 && newTrend === 1) {
